@@ -1,5 +1,12 @@
 const http = require('http');
 
+const agentName = process.env.AGENT_NAME;
+if(agentName) {
+  console.log(`Starting agent ${agentName}`)
+} else {
+  throw('Agent name not set')
+}
+
 function execShellCommand(cmd) {
   const { exec } = require('child_process');
   return new Promise((resolve, reject) => {
@@ -12,10 +19,6 @@ function execShellCommand(cmd) {
   });
  }
 
-
- execShellCommand('ls -la').then( (ret) => {
-  console.log(ret);
-});
 
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
