@@ -1,6 +1,9 @@
 const http = require('http');
 const redis = require("redis");
-const client = redis.createClient();
+const redis_client = redis.createClient();
+const express = require('express')
+const app = express();
+const port = 5000;
 
 const agentName = process.env.AGENT_NAME;
 if(agentName) {
@@ -10,14 +13,12 @@ if(agentName) {
 }
 
 const agentInfo = {
-  status: 'free',
+  busy: false,
   currentCmd: '',
   agentName: agentName
 }
 
-client.set(agentName, JSON.stringify(agentInfo));
-
-
+redis_client.set(agentName, JSON.stringify(agentInfo));
 
 function execShellCommand(cmd) {
   const { exec } = require('child_process');
@@ -31,14 +32,25 @@ function execShellCommand(cmd) {
   });
  }
 
-const express = require('express')
-const app = express()
-const port = 5000
+
 app.get('/', (request, response) => {
-    execShellCommand('sleep 30; ls -la').then( (output) => {
-      response.send(output);
-    }
-    )
+    redis_client.get(agentName, (err, reply) => {
+      currentAgentInfo = JSON.parse(reply);
+      if (currentAgentInfo.busy) {
+        response.send('I am busy, go f yourself');
+      }
+      else {
+        currentAgentInfo.busy = true;
+        redis_client.set(agentName, JSON.stringify(currentAgentInfo));
+        execShellCommand('sleep 30; ls -la').then( (output) => {
+          currentAgentInfo.busy = false;
+          redis_client.set(agentName, JSON.stringify(currentAgentInfo));
+          response.send(output);
+        }
+        )
+      }
+    }  
+  )
 })
 app.listen(port, (err) => {
     if (err) {
