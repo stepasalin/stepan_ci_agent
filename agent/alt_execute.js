@@ -51,7 +51,15 @@ app.get('/', (request, response) => {
       }
     }  
   )
-})
+});
+
+app.get('/agent_info.json', (request, response) => {
+  redis_client.get(agentName, (err, reply) => {
+    response.json(JSON.parse(reply));
+  }
+  )
+}
+)
 app.listen(port, (err) => {
     if (err) {
         return console.log('something bad happened', err)
