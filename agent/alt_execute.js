@@ -1,9 +1,20 @@
-const http = require('http');
 const redis = require("redis");
 const redis_client = redis.createClient();
 const express = require('express')
 const app = express();
 const port = 5000;
+
+function execShellCommand(cmd) {
+  const { exec } = require('child_process');
+  return new Promise((resolve, reject) => {
+   exec(cmd, (error, stdout, stderr) => {
+    if (error) {
+     resolve(`${error.code}`)
+    }
+    resolve('0');
+   }); 
+  });
+ }
 
 const agentName = process.env.AGENT_NAME;
 if(agentName) {
@@ -12,40 +23,36 @@ if(agentName) {
   throw('Agent name not set')
 }
 
-const agentInfo = {
+const defaultAgentInfo = {
   busy: false,
   currentCmd: '',
   agentName: agentName
 }
 
-redis_client.set(agentName, JSON.stringify(agentInfo));
+function updateAgentInfo(someAgentInfo) {
+  redis_client.set(agentName, JSON.stringify(someAgentInfo));
+};
 
-function execShellCommand(cmd) {
-  const { exec } = require('child_process');
-  return new Promise((resolve, reject) => {
-   exec(cmd, (error, stdout, stderr) => {
-    if (error) {
-     console.warn(error);
-    }
-    resolve(stdout? stdout : stderr);
-   }); 
-  });
- }
-
+updateAgentInfo(defaultAgentInfo);
 
 app.get('/', (request, response) => {
-    redis_client.get(agentName, (err, reply) => {
-      currentAgentInfo = JSON.parse(reply);
+    redis_client.get(agentName, (redis_err, redis_reply) => {
+      currentAgentInfo = JSON.parse(redis_reply);
       if (currentAgentInfo.busy) {
-        response.send('I am busy, go f yourself');
+        console.log('I am busy, go away');
+        response.send('I am busy, go away');
       }
       else {
+        cmdLine = "/bin/bash -l -c 'rvm use ruby-2.7.0@crm_sync_ma_integration_testing && cd /Users/stepan/code/crm_test/ && HEADLESS=true rspec spec/artec_orders/pre-release-testing/playground.rb' > /tmp/out 2>&1"
         currentAgentInfo.busy = true;
-        redis_client.set(agentName, JSON.stringify(currentAgentInfo));
-        execShellCommand('sleep 30; ls -la').then( (output) => {
+        currentAgentInfo.currentCmd = cmdLine;
+        updateAgentInfo(currentAgentInfo);
+        console.log('started executing ' + cmdLine)
+        execShellCommand(cmdLine).then( (out_code) => {
           currentAgentInfo.busy = false;
-          redis_client.set(agentName, JSON.stringify(currentAgentInfo));
-          response.send(output);
+          currentAgentInfo.currentCmd = '';
+          updateAgentInfo(currentAgentInfo);
+          response.send(out_code);
         }
         )
       }
@@ -54,8 +61,8 @@ app.get('/', (request, response) => {
 });
 
 app.get('/agent_info.json', (request, response) => {
-  redis_client.get(agentName, (err, reply) => {
-    response.json(JSON.parse(reply));
+  redis_client.get(agentName, (redis_err, redis_reply) => {
+    response.json(JSON.parse(redis_reply));
   }
   )
 }
@@ -66,18 +73,3 @@ app.listen(port, (err) => {
     }
     console.log(`server is listening on ${port}`)
 })
-
-// const server = http.createServer((req, res) => {
-//   res.statusCode = 200;
-//   res.setHeader('Content-Type', 'text/plain');
-//   execShellCommand('sleep 30l; ls -la').then( (output) => {
-//     res.end(output + agentInfo)
-//   }
-//   );
-//   // exec('sleep 10;ls -la', (error, stdout, stderr) => {
-//   //     res_obj = {'stdout': stdout, 'stderr': stderr, 'error': error}
-//   //     res.end(stdout)
-//   // } )
-// });
-
-// server.listen(5000);
