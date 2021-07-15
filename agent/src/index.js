@@ -62,7 +62,7 @@ app.get('/', (request, response) => {
       response.send('I am busy, go away');
     } else {
       logPath = `/tmp/${generateString(8)}.log`;
-      cmdLine = `/bin/bash -l -c 'rvm use ruby-2.7.0@crm_sync_ma_integration_testing && HEADLESS=true rspec spec/artec_orders/pre-release-testing/crm-ma-integration_spec.rb -e "FOR STOCK: order flow with software, accessories, scanners and preset"' > ${logPath} 2>&1`;
+      cmdLine = `/bin/bash -l -c 'rvm use ruby-2.7.0@crm_sync_ma_integration_testing && cd /Users/stepan/code/crm_test && HEADLESS=true rspec spec/artec_orders/pre-release-testing/crm-ma-integration_spec.rb -e "FOR STOCK: order flow with software, accessories, scanners and preset"' > ${logPath} 2>&1`;
       currentAgentInfo.busy = true;
       currentAgentInfo.currentCmd = cmdLine;
       currentAgentInfo.logPath = logPath;
