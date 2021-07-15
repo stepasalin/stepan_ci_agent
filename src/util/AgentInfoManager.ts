@@ -1,7 +1,10 @@
 import * as redis from 'redis';
-import { AGENT_NAME } from '../config';
-import { mustExist } from './invariant';
+import { mustExist } from './assertions';
 import { logger } from './logger';
+import { ensureDir } from 'fs-extra';
+import { join } from 'path';
+import { AGENT_NAME, LOG_DIR } from '../config';
+import { generateString } from './random';
 
 export class AgentInfoManager {
   static DEFAULT_INFO: AgentInfo = Object.freeze({
@@ -58,6 +61,11 @@ export class AgentInfoManager {
         resolve();
       })
     );
+  }
+
+  async allocateLogPath(): Promise<string> {
+    await ensureDir(join(LOG_DIR, AGENT_NAME));
+    return join(LOG_DIR, AGENT_NAME, `${generateString(8)}.log`);
   }
 }
 
