@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>
+    <%= AGENT_NAME %> — Agent
+  </title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 1em;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      font-family: monospace;
+      padding: 1em;
+      background-color: rgba(0, 20, 30, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <main>
+
+    <h1>
+      Agent <%= AGENT_NAME %> says: I'm <span id="status">Thinking</span>
+    </h1>
+
+    <pre>
+      <code id="log">
+        <%= log %>
+      </code>
+    </pre>
+  </main>
+
+  <script>
+    let intervalId;
+
+    const UPDATE_INTERVAL = 1000
+    const elements = {
+      log: document.getElementById('log'),
+      status: document.getElementById('status'),
+    }
+
+    async function update() {
+      const response = await fetch('/log.txt')
+
+      if (response.status === 404) {
+        if (intervalId) clearInterval(intervalId)
+        elements.status.innerHTML = 'Free'
+        return
+      }
+
+      elements.status.innerHTML = 'Busy'
+      elements.log.innerHTML = await response.text()
+
+    }
+
+
+    intervalId = setInterval(update, UPDATE_INTERVAL)
+  </script>
+</body>
+
+</html>
