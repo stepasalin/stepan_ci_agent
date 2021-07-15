@@ -1,9 +1,11 @@
+import { createReadStream, readFile } from 'fs-extra';
+import { template } from 'lodash';
 import express from 'express';
-import { AgentInfoManager } from './util/AgentInfoManager';
-import { logger } from './util/logger';
-import { createReadStream } from 'fs-extra';
-import { executeShellCommand } from './util/exec';
 import expressLoggerMiddleware from 'express-pino-logger';
+import { AgentInfoManager } from './util/AgentInfoManager';
+import { TEMPLATE_PATH, AGENT_NAME } from './config';
+import { executeShellCommand } from './util/exec';
+import { logger } from './util/logger';
 
 const COMMANDS = {
   runTests: (logPath: string) =>
@@ -46,21 +48,35 @@ export async function createServer(): Promise<express.Express> {
     response.status(200).send(`${exitCode}`);
   });
 
-  app.get('/agent-info.json', async (_, response) => {
-    response.status(200).json(await infoManager.getInfo());
+  app.get('/log.html', async (_, response) => {
+    const { logPath } = await infoManager.getInfo();
+    const indexHTML = await readFile(TEMPLATE_PATH).then((t) =>
+      template(t.toString())
+    );
+
+    response
+      .status(logPath ? 200 : 404)
+      .type('html')
+      .send(
+        indexHTML({ AGENT_NAME, log: logPath && (await readFile(logPath)) })
+      );
   });
 
-  app.get('/current-log', async (_, response) => {
+  app.get('/log.txt', async (_, response) => {
     const { logPath } = await infoManager.getInfo();
 
     if (!logPath) {
-      return response.status(404);
+      return response.status(404).send('');
     }
 
     const stream = createReadStream(logPath);
 
     stream.on('data', (chunk) => response.write(chunk));
     stream.once('close', () => response.status(200).end());
+  });
+
+  app.get('/agent-info.json', async (_, response) => {
+    response.status(200).json(await infoManager.getInfo());
   });
 
   return app;
