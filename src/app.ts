@@ -29,12 +29,6 @@ export async function createServer(): Promise<express.Express> {
     const logPath = await infoManager.allocateLogPath();
     const commandToExecute = COMMANDS.runTests(logPath);
 
-    await infoManager.updateInfo({
-      busy: true,
-      currentCommand: commandToExecute,
-      logPath,
-    });
-
     logger.info('Started executing', { commandToExecute, logPath });
 
     const exitCode = await executeShellCommand(commandToExecute);
