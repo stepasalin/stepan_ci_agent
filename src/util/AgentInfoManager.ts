@@ -5,7 +5,7 @@ import { ensureDir } from 'fs-extra';
 import { join } from 'path';
 import { AGENT_NAME, LOG_DIR } from '../config';
 import { generateString } from './random';
-import { validate, Validator } from 'jsonschema';
+import { validate } from 'jsonschema';
 
 export class AgentInfoManager {
   static DEFAULT_INFO: AgentInfo = Object.freeze({
@@ -27,8 +27,6 @@ export class AgentInfoManager {
   private logger = logger.child({ name: 'AgentInfoManager' });
 
   private redisClient: redis.RedisClient = redis.createClient();
-
-  private validator = new Validator();
 
   private constructor() {}
 
@@ -59,9 +57,9 @@ export class AgentInfoManager {
             `Agent Info from redis did not pass JSON schema because ${validationErrors}`
           );
           return reject(validationErrors);
-        } else {
-          return resolve(parsedResult);
         }
+
+        return resolve(parsedResult);
       })
     );
   }
