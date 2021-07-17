@@ -5,6 +5,7 @@ import { ensureDir } from 'fs-extra';
 import { join } from 'path';
 import { AGENT_NAME, LOG_DIR } from '../config';
 import { generateString } from './random';
+import { validate } from 'jsonschema';
 
 export class AgentInfoManager {
   static DEFAULT_INFO: AgentInfo = Object.freeze({
@@ -12,6 +13,16 @@ export class AgentInfoManager {
     currentCommand: '',
     logPath: '',
   });
+
+  static AGENT_INFO_SCHEMA = {
+    id: '/AgentInfo',
+    type: 'object',
+    properties: {
+      busy: { type: 'boolean' },
+      currentCommand: { type: 'string' },
+      logPath: { type: 'string' },
+    },
+  };
 
   private logger = logger.child({ name: 'AgentInfoManager' });
 
@@ -34,15 +45,21 @@ export class AgentInfoManager {
 
         logger.debug('Fetching agent info', { agentName: AGENT_NAME });
 
-        try {
-          // TODO: vkruti tut json schemu, ne pozor'sya
-          const { currentCommand, busy, logPath } = JSON.parse(
-            mustExist(result)
+        const parsedResult = JSON.parse(mustExist(result));
+
+        const validationErrors = validate(
+          parsedResult,
+          AgentInfoManager.AGENT_INFO_SCHEMA
+        ).errors;
+
+        if (validationErrors.length > 0) {
+          logger.debug(
+            `Agent Info from redis did not pass JSON schema because ${validationErrors}`
           );
-          resolve({ currentCommand, busy, logPath });
-        } catch (e) {
-          reject(e);
+          return reject(validationErrors);
         }
+
+        return resolve(parsedResult);
       })
     );
   }

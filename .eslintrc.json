@@ -17,6 +17,7 @@
     "prettier"
   ],
   "rules": {
+    "no-else-return": "error",
     "prettier/prettier": "error",
     "require-jsdoc": "off"
   }
