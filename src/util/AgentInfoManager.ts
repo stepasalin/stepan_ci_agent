@@ -52,7 +52,7 @@ export class AgentInfoManager {
           AgentInfoManager.AGENT_INFO_SCHEMA
         ).errors;
 
-        if (validationErrors.length == 1) {
+        if (validationErrors.length > 0) {
           logger.debug(
             `Agent Info from redis did not pass JSON schema because ${validationErrors}`
           );
