@@ -70,7 +70,12 @@ export async function createServer(): Promise<express.Express> {
   });
 
   app.get('/agent-info.json', async (_, response) => {
-    response.status(200).json(await infoManager.getInfo());
+    try {
+      const infoManagerResponse = await infoManager.getInfo();
+      response.status(200).json(infoManagerResponse);
+    } catch (error) {
+      response.status(500).send(error);
+    }
   });
 
   return app;
