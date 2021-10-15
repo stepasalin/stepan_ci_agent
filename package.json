@@ -7,7 +7,8 @@
     "start": "NODE_ENV=production node build/index.js",
     "dev": "NODE_ENV=development ts-node-dev src/index.ts",
     "lint": "eslint --fix",
-    "build": "rm -rf ./build && tsc"
+    "build": "rm -rf ./build && tsc",
+    "agent": "NODE_ENV=development ts-node-dev src/agent.ts;"
   },
   "author": "Stepan",
   "license": "ISC",
