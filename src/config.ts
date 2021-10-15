@@ -1,7 +1,6 @@
 import { join } from 'path';
 import { mustExist } from './util/assertions';
 
-export const PORT = mustExist(process.env.PORT, "Hey where's my PORT variable");
 export const AGENT_NAME = mustExist(
   process.env.AGENT_NAME,
   'AGENT_NAME is not defined'
