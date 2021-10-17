@@ -17,8 +17,8 @@ export async function makeServerRequest(
   return new Promise<any>((resolve, reject) => {
     logger.info(`sending ${options} request to server`);
     const req = https.request(httpOptions(options), (res) => {
-      if (res == undefined) {
-        return reject(new Error('server response is undefined'));
+      if (res.statusCode == undefined) {
+        return reject(new Error('server response status is undefined'));
       }
       if (res.statusCode < 200 || res.statusCode >= 300) {
         // reject on bad status
