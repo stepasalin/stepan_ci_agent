@@ -24,7 +24,7 @@ async function registerAtServer(): Promise<String> {
 
 async function agent(): Promise<void> {
   const infoManager = await AgentInfoManager.create();
-  const infoAtStartup = infoManager.getInfo();
+  const infoAtStartup = await infoManager.getInfo();
   logger.info(`agent ${AGENT_NAME} has started with info ${infoAtStartup}`);
   if (infoAtStartup == null) {
     const thisAgentId = await registerAtServer();

@@ -1,12 +1,19 @@
 import { SERVER_HOST, SERVER_PORT } from '../config';
-import https from 'https';
+import http from 'http';
 import { logger } from './logger';
 
-function httpOptions(uniqOptions = {}) {
-  const defaultOptions = {
+function httpOptions(uniqOptions: any, _postData: any) {
+  const defaultOptions: any = {
     hostname: SERVER_HOST,
     port: SERVER_PORT,
   };
+  if (uniqOptions.method == 'POST' || uniqOptions.method == 'PATCH') {
+    const dataStringified = JSON.stringify(_postData);
+    defaultOptions.headers = {
+      'Content-Type': 'application/json',
+      'Content-Lenght': dataStringified.length,
+    };
+  }
   return { ...defaultOptions, ...uniqOptions };
 }
 
@@ -15,8 +22,11 @@ export async function makeServerRequest(
   _postData: object
 ): Promise<any> {
   return new Promise<any>((resolve, reject) => {
-    logger.info(`sending ${options} request to server`);
-    const req = https.request(httpOptions(options), (res) => {
+    const requestOptions = httpOptions(options, _postData);
+    logger.info(`sending ${JSON.stringify(requestOptions)} request to server`);
+    logger.info(`data ${JSON.stringify(_postData)}`);
+
+    const req = http.request(httpOptions(requestOptions, _postData), (res) => {
       if (res.statusCode == undefined) {
         return reject(new Error('server response status is undefined'));
       }
@@ -50,7 +60,8 @@ export async function makeServerRequest(
     });
 
     if (_postData) {
-      req.write(_postData);
+      // req.write(JSON.stringify(_postData));
+      req.write('{"a": "123"}');
     }
     req.end();
   });
