@@ -8,7 +8,8 @@
     "dev": "NODE_ENV=development ts-node-dev src/index.ts",
     "lint": "eslint --fix",
     "build": "rm -rf ./build && tsc",
-    "agent": "NODE_ENV=development ts-node-dev src/agent.ts;"
+    "agent": "NODE_ENV=development ts-node-dev src/agent.ts;",
+    "redis-flush": "echo 'FLUSHALL' | redis-cli"
   },
   "author": "Stepan",
   "license": "ISC",
