@@ -1,24 +1,14 @@
 import { AGENT_NAME, SERVER_HOST, SERVER_PORT } from './config';
 import { AgentInfoManager } from './util/AgentInfoManager';
 import { logger } from './util/logger';
+import { postToServer } from './util/serverRequest';
 const request = require('request');
 
-function getNewAgentId(): Promise<String> {
-  return new Promise<String>((resolve, _reject) => {
-    request.post(
-      {
-        url: `http://${SERVER_HOST}:${SERVER_PORT}/add-agent`,
-        json: { name: AGENT_NAME },
-      },
-      function (err: any, httpResponse: any, body: any) {
-        logger.info('Sending request to server');
-        logger.info(`Err ${err}`);
-        logger.info(`Http Response ${JSON.stringify(httpResponse)}`);
-        logger.info(`Body ${JSON.stringify(body)}`);
-        resolve(body.agent._id);
-      }
-    );
+async function getNewAgentId() {
+  const responseBody: any = await postToServer('add-agent', {
+    name: AGENT_NAME,
   });
+  return responseBody.agent._id;
 }
 
 async function agent(): Promise<void> {
