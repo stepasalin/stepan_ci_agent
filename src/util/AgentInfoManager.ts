@@ -1,5 +1,4 @@
 import * as redis from 'redis';
-import { mustExist } from './assertions';
 import { logger } from './logger';
 import { ensureDir } from 'fs-extra';
 import { join } from 'path';
