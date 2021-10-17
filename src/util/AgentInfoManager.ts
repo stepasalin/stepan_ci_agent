@@ -1,5 +1,4 @@
 import * as redis from 'redis';
-import { mustExist } from './assertions';
 import { logger } from './logger';
 import { ensureDir } from 'fs-extra';
 import { join } from 'path';
@@ -31,12 +30,10 @@ export class AgentInfoManager {
   private constructor() {}
 
   static async create() {
-    const manager = new AgentInfoManager();
-    await manager.updateInfo(AgentInfoManager.DEFAULT_INFO);
-    return manager;
+    return new AgentInfoManager();
   }
 
-  async getInfo(): Promise<AgentInfo> {
+  async getInfo() {
     const { redisClient, logger } = this;
 
     return new Promise((resolve, reject) =>
@@ -44,8 +41,11 @@ export class AgentInfoManager {
         if (error) return reject(error);
 
         logger.debug('Fetching agent info', { agentName: AGENT_NAME });
+        if (result == null) {
+          return resolve(null);
+        }
 
-        const parsedResult = JSON.parse(mustExist(result));
+        const parsedResult = JSON.parse(result);
 
         const validationErrors = validate(
           parsedResult,
