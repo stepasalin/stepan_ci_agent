@@ -13,9 +13,9 @@ function getNewAgentId(): Promise<String> {
       function (err: any, httpResponse: any, body: any) {
         logger.info('Sending request to server');
         logger.info(`Err ${err}`);
-        logger.info(`Http Response ${httpResponse}`);
-        logger.info(`Body ${body}`);
-        resolve(body);
+        logger.info(`Http Response ${JSON.stringify(httpResponse)}`);
+        logger.info(`Body ${JSON.stringify(body)}`);
+        resolve(body.agent._id);
       }
     );
   });
