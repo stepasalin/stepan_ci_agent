@@ -3,8 +3,9 @@ import { AgentInfoManager } from './util/AgentInfoManager';
 import { logger } from './util/logger';
 import { postToServer, getFromServer } from './util/serverRequest';
 import { isEmpty } from './util/isEmpty';
+import { executeShellCommand } from './util/exec';
 
-async function getNewAgentId() {
+async function getNewAgentId(): Promise<string> {
   const responseBody: any = await postToServer('add-agent', {
     name: AGENT_NAME,
   });
@@ -29,18 +30,18 @@ async function agent(): Promise<void> {
   const infoManager = await AgentInfoManager.create();
   const infoAtStartup: any = await infoManager.getInfo();
   logger.info(
-    `agent ${AGENT_NAME} has started with info ${JSON.stringify(infoAtStartup)}`
+    `agent ${AGENT_NAME} has awakened with info ${JSON.stringify(
+      infoAtStartup
+    )}`
   );
   if (infoAtStartup == null) {
-    logger.info(
-      `Agent ${AGENT_NAME} started with empty info, will register at server`
-    );
-    const thisAgentId = await getNewAgentId();
+    logger.info(`Agent ${AGENT_NAME} has empty info, will register at server`);
+    const thisAgentId: String = await getNewAgentId();
     const newAgentInfo = {
       ...AgentInfoManager.DEFAULT_INFO,
       ...{ id: thisAgentId },
     };
-    infoManager.updateInfo(newAgentInfo);
+    await infoManager.updateInfo(newAgentInfo);
   }
 
   const thisAgentId = infoAtStartup.id;
@@ -53,13 +54,14 @@ async function agent(): Promise<void> {
     logger.info(`Got Run Params: ${JSON.stringify(availableRunParams)}`);
 
     if (isEmpty(availableRunParams)) {
-      logger.info('No available runs');
+      logger.info('No available runs. Bye-bye for now');
       process.exit(0);
     }
 
     const runId = availableRunParams.runId;
     const runCmd = await getRunCmd(thisAgentId, runId);
-    logger.info(`Will be running ${runCmd}, TO BE DEVELOPED`);
+    const logPath: String = await infoManager.allocateLogPath;
+    const execResult = executeShellCommand(runCmd, logPath);
   }
   process.exit();
 }

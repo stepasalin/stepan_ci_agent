@@ -80,7 +80,7 @@ export class AgentInfoManager {
     );
   }
 
-  async allocateLogPath(): Promise<string> {
+  async allocateLogPath() {
     await ensureDir(join(LOG_DIR, AGENT_NAME));
     return join(LOG_DIR, AGENT_NAME, `${generateString(8)}.log`);
   }
