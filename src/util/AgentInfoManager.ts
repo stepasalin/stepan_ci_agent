@@ -36,7 +36,7 @@ export class AgentInfoManager {
   async getInfo() {
     const { redisClient, logger } = this;
 
-    return new Promise((resolve, reject) =>
+    return new Promise<any>((resolve, reject) =>
       redisClient.get(AGENT_NAME, (error, result) => {
         if (error) return reject(error);
 
