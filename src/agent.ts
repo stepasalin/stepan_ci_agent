@@ -1,29 +1,78 @@
-import { AGENT_NAME, SERVER_HOST, SERVER_PORT } from './config';
+import { AGENT_NAME } from './config';
 import { AgentInfoManager } from './util/AgentInfoManager';
 import { logger } from './util/logger';
-import { postToServer } from './util/serverRequest';
-const request = require('request');
+import { postToServer, getFromServer } from './util/serverRequest';
+import { isEmpty } from './util/isEmpty';
+import { executeShellCommand } from './util/exec';
 
-async function getNewAgentId() {
+async function getNewAgentId(): Promise<string> {
   const responseBody: any = await postToServer('add-agent', {
     name: AGENT_NAME,
   });
   return responseBody.agent._id;
 }
 
+async function getRun(agentId: String) {
+  const responseBody: any = await postToServer('get-run', { agentId: agentId });
+  return responseBody;
+}
+
+async function getRunCmd(agentId: String, runId: String) {
+  const responseBody: any = await getFromServer('run-command', {
+    agentId: agentId,
+    runId: runId,
+  });
+
+  return JSON.parse(responseBody).runCmd;
+}
+
 async function agent(): Promise<void> {
   const infoManager = await AgentInfoManager.create();
-  const infoAtStartup = await infoManager.getInfo();
+  const agentInfo: any = await infoManager.getInfo();
   logger.info(
-    `agent ${AGENT_NAME} has started with info ${JSON.stringify(infoAtStartup)}`
+    `agent ${AGENT_NAME} has awakened with info ${JSON.stringify(agentInfo)}`
   );
-  if (infoAtStartup == null) {
-    const thisAgentId = await getNewAgentId();
+  if (agentInfo == null) {
+    logger.info(`Agent ${AGENT_NAME} has empty info, will register at server`);
+    const thisAgentId: String = await getNewAgentId();
     const newAgentInfo = {
       ...AgentInfoManager.DEFAULT_INFO,
       ...{ id: thisAgentId },
     };
-    infoManager.updateInfo(newAgentInfo);
+    await infoManager.updateInfo(newAgentInfo);
+    process.exit();
+  }
+
+  const thisAgentId = agentInfo.id;
+  if (!agentInfo.busy) {
+    logger.info(
+      `Agent ${AGENT_NAME} awakened as free, therefore requesting a Run`
+    );
+
+    const availableRunParams = await getRun(thisAgentId);
+    logger.info(`Got Run Params: ${JSON.stringify(availableRunParams)}`);
+
+    if (isEmpty(availableRunParams)) {
+      logger.info('No available runs. Bye-bye for now');
+      process.exit(0);
+    }
+
+    const runId = availableRunParams.runId;
+    const runCmd = await getRunCmd(thisAgentId, runId);
+    const logPath: String = await infoManager.allocateLogPath();
+    agentInfo.busy = true;
+    agentInfo.currentCommand = runCmd;
+    agentInfo.logPath = logPath;
+    await infoManager.updateInfo(agentInfo);
+
+    const execResult = await executeShellCommand(runCmd, logPath);
+
+    agentInfo.busy = false;
+    agentInfo.currentCommand = runCmd;
+    agentInfo.logPath = logPath;
+    await infoManager.updateInfo(agentInfo);
+
+    process.exit(execResult);
   }
   process.exit();
 }

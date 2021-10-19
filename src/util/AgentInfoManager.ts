@@ -36,7 +36,7 @@ export class AgentInfoManager {
   async getInfo() {
     const { redisClient, logger } = this;
 
-    return new Promise((resolve, reject) =>
+    return new Promise<any>((resolve, reject) =>
       redisClient.get(AGENT_NAME, (error, result) => {
         if (error) return reject(error);
 
@@ -67,10 +67,9 @@ export class AgentInfoManager {
   async updateInfo(agentInfo: AgentInfo): Promise<void> {
     const { redisClient, logger } = this;
 
-    logger.info('Writing agent info to redis', {
-      agentName: AGENT_NAME,
-      agentInfo,
-    });
+    logger.info(
+      `Writing agent ${AGENT_NAME} info to redis: ${JSON.stringify(agentInfo)}`
+    );
 
     return new Promise((resolve, reject) =>
       redisClient.set(AGENT_NAME, JSON.stringify(agentInfo), (error) => {
