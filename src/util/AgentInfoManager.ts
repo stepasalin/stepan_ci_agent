@@ -67,10 +67,9 @@ export class AgentInfoManager {
   async updateInfo(agentInfo: AgentInfo): Promise<void> {
     const { redisClient, logger } = this;
 
-    logger.info('Writing agent info to redis', {
-      agentName: AGENT_NAME,
-      agentInfo,
-    });
+    logger.info(
+      `Writing agent ${AGENT_NAME} info to redis: ${JSON.stringify(agentInfo)}`
+    );
 
     return new Promise((resolve, reject) =>
       redisClient.set(AGENT_NAME, JSON.stringify(agentInfo), (error) => {
@@ -80,7 +79,7 @@ export class AgentInfoManager {
     );
   }
 
-  async allocateLogPath() {
+  async allocateLogPath(): Promise<string> {
     await ensureDir(join(LOG_DIR, AGENT_NAME));
     return join(LOG_DIR, AGENT_NAME, `${generateString(8)}.log`);
   }

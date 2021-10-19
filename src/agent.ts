@@ -42,6 +42,7 @@ async function agent(): Promise<void> {
       ...{ id: thisAgentId },
     };
     await infoManager.updateInfo(newAgentInfo);
+    process.exit();
   }
 
   const thisAgentId = infoAtStartup.id;
@@ -60,8 +61,20 @@ async function agent(): Promise<void> {
 
     const runId = availableRunParams.runId;
     const runCmd = await getRunCmd(thisAgentId, runId);
-    const logPath: String = await infoManager.allocateLogPath;
-    const execResult = executeShellCommand(runCmd, logPath);
+    const logPath: String = await infoManager.allocateLogPath();
+    infoAtStartup.busy = true;
+    infoAtStartup.currentCommand = runCmd;
+    infoAtStartup.logPath = logPath;
+    await infoManager.updateInfo(infoAtStartup);
+
+    const execResult = await executeShellCommand(runCmd, logPath);
+
+    infoAtStartup.busy = false;
+    infoAtStartup.currentCommand = runCmd;
+    infoAtStartup.logPath = logPath;
+    await infoManager.updateInfo(infoAtStartup);
+
+    process.exit(execResult);
   }
   process.exit();
 }
