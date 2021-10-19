@@ -28,13 +28,11 @@ async function getRunCmd(agentId: String, runId: String) {
 
 async function agent(): Promise<void> {
   const infoManager = await AgentInfoManager.create();
-  const infoAtStartup: any = await infoManager.getInfo();
+  const agentInfo: any = await infoManager.getInfo();
   logger.info(
-    `agent ${AGENT_NAME} has awakened with info ${JSON.stringify(
-      infoAtStartup
-    )}`
+    `agent ${AGENT_NAME} has awakened with info ${JSON.stringify(agentInfo)}`
   );
-  if (infoAtStartup == null) {
+  if (agentInfo == null) {
     logger.info(`Agent ${AGENT_NAME} has empty info, will register at server`);
     const thisAgentId: String = await getNewAgentId();
     const newAgentInfo = {
@@ -45,8 +43,8 @@ async function agent(): Promise<void> {
     process.exit();
   }
 
-  const thisAgentId = infoAtStartup.id;
-  if (!infoAtStartup.busy) {
+  const thisAgentId = agentInfo.id;
+  if (!agentInfo.busy) {
     logger.info(
       `Agent ${AGENT_NAME} awakened as free, therefore requesting a Run`
     );
@@ -62,17 +60,17 @@ async function agent(): Promise<void> {
     const runId = availableRunParams.runId;
     const runCmd = await getRunCmd(thisAgentId, runId);
     const logPath: String = await infoManager.allocateLogPath();
-    infoAtStartup.busy = true;
-    infoAtStartup.currentCommand = runCmd;
-    infoAtStartup.logPath = logPath;
-    await infoManager.updateInfo(infoAtStartup);
+    agentInfo.busy = true;
+    agentInfo.currentCommand = runCmd;
+    agentInfo.logPath = logPath;
+    await infoManager.updateInfo(agentInfo);
 
     const execResult = await executeShellCommand(runCmd, logPath);
 
-    infoAtStartup.busy = false;
-    infoAtStartup.currentCommand = runCmd;
-    infoAtStartup.logPath = logPath;
-    await infoManager.updateInfo(infoAtStartup);
+    agentInfo.busy = false;
+    agentInfo.currentCommand = runCmd;
+    agentInfo.logPath = logPath;
+    await infoManager.updateInfo(agentInfo);
 
     process.exit(execResult);
   }
