@@ -26,6 +26,18 @@ async function getRunCmd(agentId: String, runId: String) {
   return JSON.parse(responseBody).runCmd;
 }
 
+async function updateRunStatus(
+  agentId: String,
+  runId: String,
+  newExecutionStatus: String
+): Promise<void> {
+  await postToServer('upate-run-status', {
+    agentId: agentId,
+    runId: runId,
+    newExecutionStatus: newExecutionStatus,
+  });
+}
+
 async function agent(): Promise<void> {
   const infoManager = await AgentInfoManager.create();
   const agentInfo: any = await infoManager.getInfo();
@@ -64,13 +76,20 @@ async function agent(): Promise<void> {
     agentInfo.currentCommand = runCmd;
     agentInfo.logPath = logPath;
     await infoManager.updateInfo(agentInfo);
+    await updateRunStatus(thisAgentId, runId, 'inProgress');
 
     const execResult = await executeShellCommand(runCmd, logPath);
-
     agentInfo.busy = false;
     agentInfo.currentCommand = runCmd;
     agentInfo.logPath = logPath;
     await infoManager.updateInfo(agentInfo);
+    let finalStatus;
+    if (execResult == 0) {
+      finalStatus = 'success';
+    } else {
+      finalStatus = 'fail';
+    }
+    await updateRunStatus(thisAgentId, runId, finalStatus);
 
     process.exit(execResult);
   }
