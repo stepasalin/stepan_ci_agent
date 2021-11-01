@@ -1,4 +1,5 @@
 import * as childProcess from 'child_process';
+import { resolve } from 'path';
 import { logger as defaultLogger } from './logger';
 const fs = require('fs').promises;
 
@@ -38,7 +39,7 @@ function stringDiff(str1: String, str2: String) {
   return diff;
 }
 
-export async function newLog(logPath: string) {
+export async function newLog(logPath: string): Promise<string> {
   logger.debug('entered calculate new log method');
   const currentLog = await fs.readFile(logPath);
   const previousLogPath = previouslySentLogPath(logPath);

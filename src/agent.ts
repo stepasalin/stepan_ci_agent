@@ -60,7 +60,7 @@ async function agent(): Promise<void> {
     const { logPath } = agentInfo;
     const newLogEntry = await newLog(logPath);
     logger.info('+++++++++++++++++++');
-    logger.info(newLogEntry);
+    logger.info(newLogEntry.toString());
     logger.info('+++++++++++++++++++');
   }
 
