@@ -31,6 +31,10 @@ async function fileExists(path: string): Promise<boolean> {
     .catch(() => false);
 }
 
+async function readFile(path: string): Promise<string> {
+  return (await fs.readFile(path)).toString();
+}
+
 function stringDiff(str1: String, str2: String) {
   let diff = '';
   str2.split('').forEach(function (val, i) {
@@ -41,7 +45,7 @@ function stringDiff(str1: String, str2: String) {
 
 export async function newLog(logPath: string): Promise<string> {
   logger.debug('entered calculate new log method');
-  const currentLog = await fs.readFile(logPath);
+  const currentLog = await readFile(logPath);
   const previousLogPath = previouslySentLogPath(logPath);
 
   if (!(await fileExists(previousLogPath))) {
@@ -53,7 +57,7 @@ export async function newLog(logPath: string): Promise<string> {
   }
 
   logger.debug(`.previous file FOUND, calculating log digg`);
-  const previousLog = await fs.readFile(previousLogPath);
+  const previousLog = await readFile(previousLogPath);
   await fs.writeFile(previousLogPath, currentLog);
   return stringDiff(previousLog, currentLog);
 }
