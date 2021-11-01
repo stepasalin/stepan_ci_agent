@@ -58,7 +58,7 @@ async function agent(): Promise<void> {
   const thisAgentId = agentInfo.id;
   if (agentInfo.busy) {
     const { logPath } = agentInfo;
-    const newLogEntry = newLog(logPath);
+    const newLogEntry = await newLog(logPath);
     logger.info('+++++++++++++++++++');
     logger.info(newLogEntry);
     logger.info('+++++++++++++++++++');
