@@ -1,5 +1,4 @@
 import * as childProcess from 'child_process';
-import { resolve } from 'path';
 import { logger as defaultLogger } from './logger';
 const fs = require('fs').promises;
 
