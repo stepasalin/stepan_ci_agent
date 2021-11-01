@@ -3,7 +3,7 @@ import { AgentInfoManager } from './util/AgentInfoManager';
 import { logger } from './util/logger';
 import { postToServer, getFromServer } from './util/serverRequest';
 import { isEmpty } from './util/isEmpty';
-import { executeShellCommand } from './util/exec';
+import { executeShellCommand, newLog } from './util/exec';
 
 async function getNewAgentId(): Promise<string> {
   const responseBody: any = await postToServer('add-agent', {
@@ -56,6 +56,14 @@ async function agent(): Promise<void> {
   }
 
   const thisAgentId = agentInfo.id;
+  if (agentInfo.busy) {
+    const { logPath } = agentInfo;
+    const newLogEntry = newLog(logPath);
+    logger.info('+++++++++++++++++++');
+    logger.info(newLogEntry);
+    logger.info('+++++++++++++++++++');
+  }
+
   if (!agentInfo.busy) {
     logger.info(
       `Agent ${AGENT_NAME} awakened as free, therefore requesting a Run`
