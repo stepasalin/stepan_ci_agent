@@ -1,6 +1,7 @@
 import * as childProcess from 'child_process';
 import { logger as defaultLogger } from './logger';
-import * as fs from 'fs';
+// import * as fs from 'fs';
+const fs = require('fs').promises;
 const path = require('path');
 
 const logger = defaultLogger.child({ name: 'execute' });
@@ -32,25 +33,16 @@ function stringDiff(str1: string, str2: string) {
   return diff;
 }
 
-async function readFile(path: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, 'utf8', function (err, data) {
-      if (err) {
-        reject(err);
-      }
-      resolve(data);
-    });
-  });
-}
-
 export async function newLog(logPath: string) {
-  const currentLog = await readFile(logPath);
+  const currentLog = await fs.readFile(logPath);
   const previousLogPath = previouslySentLogPath(logPath);
 
   if (!path.existsSync(previousLogPath)) {
+    await fs.writeFile(previousLogPath, currentLog);
     return currentLog;
   }
 
-  const previousLog = await readFile(previousLogPath);
+  const previousLog = await fs.readFile(previousLogPath);
+  await fs.writeFile(previousLogPath, currentLog);
   return stringDiff(previousLog, currentLog);
 }
