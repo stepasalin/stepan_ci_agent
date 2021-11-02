@@ -11,6 +11,7 @@ export class AgentInfoManager {
     busy: false,
     currentCommand: '',
     logPath: '',
+    id: '',
   });
 
   static AGENT_INFO_SCHEMA = {
@@ -92,4 +93,6 @@ export interface AgentInfo {
   currentCommand: string;
   /** Absolute path to logs, local to agent machine. */
   logPath: string;
+  /** Agent id obtained from server. */
+  id: string;
 }

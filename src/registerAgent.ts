@@ -7,7 +7,7 @@ export async function registerAgent(
   infoManager: AgentInfoManager
 ): Promise<void> {
   logger.info(`Agent ${AGENT_NAME} has empty info, will register at server`);
-  const thisAgentId: String = await getNewAgentId();
+  const thisAgentId: string = await getNewAgentId();
   const newAgentInfo = {
     ...AgentInfoManager.DEFAULT_INFO,
     ...{ id: thisAgentId },
