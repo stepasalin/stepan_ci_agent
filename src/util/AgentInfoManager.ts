@@ -85,7 +85,7 @@ export class AgentInfoManager {
   }
 }
 
-interface AgentInfo {
+export interface AgentInfo {
   /** If true, agent is currently executing a currentCommand. */
   busy: boolean;
   /** Current command being executed. */

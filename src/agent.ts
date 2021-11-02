@@ -1,14 +1,11 @@
 import { AGENT_NAME } from './config';
 import { AgentInfoManager } from './util/AgentInfoManager';
 import { logger } from './util/logger';
-import {
-  getNewAgentId,
-  getRun,
-  getRunCmd,
-  updateRunStatus,
-} from './util/serverRequest';
+import { getRun, getRunCmd, updateRunStatus } from './util/serverRequest';
 import { isEmpty } from './util/isEmpty';
-import { executeShellCommand, newLog } from './util/exec';
+import { executeShellCommand } from './util/exec';
+import { busyAgent } from './busyAgent';
+import { registerAgent } from './registerAgent';
 
 async function agent(): Promise<void> {
   const infoManager = await AgentInfoManager.create();
@@ -17,21 +14,12 @@ async function agent(): Promise<void> {
     `agent ${AGENT_NAME} has awakened with info ${JSON.stringify(agentInfo)}`
   );
   if (agentInfo == null) {
-    logger.info(`Agent ${AGENT_NAME} has empty info, will register at server`);
-    const thisAgentId: String = await getNewAgentId();
-    const newAgentInfo = {
-      ...AgentInfoManager.DEFAULT_INFO,
-      ...{ id: thisAgentId },
-    };
-    await infoManager.updateInfo(newAgentInfo);
-    process.exit();
+    await registerAgent(infoManager);
   }
 
   const thisAgentId = agentInfo.id;
   if (agentInfo.busy) {
-    const { logPath } = agentInfo;
-    const newLogEntry = await newLog(logPath);
-    console.log(`lets do something ${newLogEntry} !`);
+    await busyAgent(infoManager, agentInfo);
   }
 
   if (!agentInfo.busy) {
