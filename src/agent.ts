@@ -1,42 +1,14 @@
 import { AGENT_NAME } from './config';
 import { AgentInfoManager } from './util/AgentInfoManager';
 import { logger } from './util/logger';
-import { postToServer, getFromServer } from './util/serverRequest';
+import {
+  getNewAgentId,
+  getRun,
+  getRunCmd,
+  updateRunStatus,
+} from './util/serverRequest';
 import { isEmpty } from './util/isEmpty';
 import { executeShellCommand, newLog } from './util/exec';
-
-async function getNewAgentId(): Promise<string> {
-  const responseBody: any = await postToServer('add-agent', {
-    name: AGENT_NAME,
-  });
-  return responseBody.agent._id;
-}
-
-async function getRun(agentId: String) {
-  const responseBody: any = await postToServer('get-run', { agentId: agentId });
-  return responseBody;
-}
-
-async function getRunCmd(agentId: String, runId: String) {
-  const responseBody: any = await getFromServer('run-command', {
-    agentId: agentId,
-    runId: runId,
-  });
-
-  return JSON.parse(responseBody).runCmd;
-}
-
-async function updateRunStatus(
-  agentId: String,
-  runId: String,
-  newExecutionStatus: String
-): Promise<void> {
-  await postToServer('upate-run-status', {
-    agentId: agentId,
-    runId: runId,
-    newExecutionStatus: newExecutionStatus,
-  });
-}
 
 async function agent(): Promise<void> {
   const infoManager = await AgentInfoManager.create();

@@ -1,6 +1,6 @@
 import { logger } from './logger';
 import { urlEncode } from './urlencodeObj';
-import { SERVER_HOST, SERVER_PORT } from '../config';
+import { SERVER_HOST, SERVER_PORT, AGENT_NAME } from '../config';
 const request = require('request');
 
 export function postToServer(endpoint: String, json: Object) {
@@ -54,5 +54,38 @@ export function getFromServer(endpoint: String, params: Object) {
         resolve(body);
       }
     );
+  });
+}
+
+export async function getNewAgentId(): Promise<string> {
+  const responseBody: any = await postToServer('add-agent', {
+    name: AGENT_NAME,
+  });
+  return responseBody.agent._id;
+}
+
+export async function getRun(agentId: String) {
+  const responseBody: any = await postToServer('get-run', { agentId: agentId });
+  return responseBody;
+}
+
+export async function getRunCmd(agentId: String, runId: String) {
+  const responseBody: any = await getFromServer('run-command', {
+    agentId: agentId,
+    runId: runId,
+  });
+
+  return JSON.parse(responseBody).runCmd;
+}
+
+export async function updateRunStatus(
+  agentId: String,
+  runId: String,
+  newExecutionStatus: String
+): Promise<void> {
+  await postToServer('upate-run-status', {
+    agentId: agentId,
+    runId: runId,
+    newExecutionStatus: newExecutionStatus,
   });
 }
