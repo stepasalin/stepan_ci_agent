@@ -59,9 +59,7 @@ async function agent(): Promise<void> {
   if (agentInfo.busy) {
     const { logPath } = agentInfo;
     const newLogEntry = await newLog(logPath);
-    logger.info('+++++++++++++++++++');
-    logger.info(newLogEntry);
-    logger.info('+++++++++++++++++++');
+    console.log(`lets do something ${newLogEntry} !`);
   }
 
   if (!agentInfo.busy) {
