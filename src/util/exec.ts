@@ -1,5 +1,8 @@
 import * as childProcess from 'child_process';
+import { stringDiff } from './stringDiff';
+import { fileExists, readFile } from './fsStuff';
 import { logger as defaultLogger } from './logger';
+const fs = require('fs').promises;
 
 const logger = defaultLogger.child({ name: 'execute' });
 
@@ -16,4 +19,18 @@ export function executeShellCommand(cmd: String, logPath: String) {
       reject(error);
     });
   });
+}
+
+export async function newLog(logPath: string): Promise<string> {
+  const currentLog = await readFile(logPath);
+  const previousLogPath = `${logPath}.previous`;
+
+  if (!(await fileExists(previousLogPath))) {
+    await fs.writeFile(previousLogPath, currentLog);
+    return currentLog;
+  }
+
+  const previousLog = await readFile(previousLogPath);
+  await fs.writeFile(previousLogPath, currentLog);
+  return stringDiff(previousLog, currentLog);
 }

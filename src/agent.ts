@@ -3,7 +3,7 @@ import { AgentInfoManager } from './util/AgentInfoManager';
 import { logger } from './util/logger';
 import { postToServer, getFromServer } from './util/serverRequest';
 import { isEmpty } from './util/isEmpty';
-import { executeShellCommand } from './util/exec';
+import { executeShellCommand, newLog } from './util/exec';
 
 async function getNewAgentId(): Promise<string> {
   const responseBody: any = await postToServer('add-agent', {
@@ -26,6 +26,18 @@ async function getRunCmd(agentId: String, runId: String) {
   return JSON.parse(responseBody).runCmd;
 }
 
+async function updateRunStatus(
+  agentId: String,
+  runId: String,
+  newExecutionStatus: String
+): Promise<void> {
+  await postToServer('upate-run-status', {
+    agentId: agentId,
+    runId: runId,
+    newExecutionStatus: newExecutionStatus,
+  });
+}
+
 async function agent(): Promise<void> {
   const infoManager = await AgentInfoManager.create();
   const agentInfo: any = await infoManager.getInfo();
@@ -44,6 +56,12 @@ async function agent(): Promise<void> {
   }
 
   const thisAgentId = agentInfo.id;
+  if (agentInfo.busy) {
+    const { logPath } = agentInfo;
+    const newLogEntry = await newLog(logPath);
+    console.log(`lets do something ${newLogEntry} !`);
+  }
+
   if (!agentInfo.busy) {
     logger.info(
       `Agent ${AGENT_NAME} awakened as free, therefore requesting a Run`
@@ -64,13 +82,20 @@ async function agent(): Promise<void> {
     agentInfo.currentCommand = runCmd;
     agentInfo.logPath = logPath;
     await infoManager.updateInfo(agentInfo);
+    await updateRunStatus(thisAgentId, runId, 'inProgress');
 
     const execResult = await executeShellCommand(runCmd, logPath);
-
     agentInfo.busy = false;
     agentInfo.currentCommand = runCmd;
     agentInfo.logPath = logPath;
     await infoManager.updateInfo(agentInfo);
+    let finalStatus;
+    if (execResult == 0) {
+      finalStatus = 'success';
+    } else {
+      finalStatus = 'fail';
+    }
+    await updateRunStatus(thisAgentId, runId, finalStatus);
 
     process.exit(execResult);
   }

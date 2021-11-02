@@ -11,19 +11,19 @@ export function postToServer(endpoint: String, json: Object) {
         json: json,
       },
       function (err: any, httpResponse: any, body: any) {
-        logger.info(`Sending POST request to ${endpoint}`);
-        logger.info(`Err ${err}`);
+        logger.debug(`Sending POST request to ${endpoint}`);
+        logger.debug(`Err ${err}`);
         if (err) {
           logger.error(`Post request finished with ${err}`);
           process.exit(1);
         }
-        logger.info(`Http Response ${JSON.stringify(httpResponse)}`);
+        logger.debug(`Http Response ${JSON.stringify(httpResponse)}`);
         const resStatus = httpResponse.statusCode;
         if (resStatus != 200 && resStatus != 201) {
           logger.error(`Response code is ${resStatus}`);
           process.exit(1);
         }
-        logger.info(`Body ${JSON.stringify(body)}`);
+        logger.debug(`Body ${JSON.stringify(body)}`);
         resolve(body);
       }
     );
@@ -38,19 +38,19 @@ export function getFromServer(endpoint: String, params: Object) {
     request.get(
       { url: url },
       function (err: any, httpResponse: any, body: any) {
-        logger.info(`Sending GET request to ${url}`);
-        logger.info(`Err ${err}`);
+        logger.debug(`Sending GET request to ${url}`);
+        logger.debug(`Err ${err}`);
         if (err) {
           logger.error(`Get request finished with ${err}`);
           process.exit(1);
         }
-        logger.info(`Http Response ${JSON.stringify(httpResponse)}`);
+        logger.debug(`Http Response ${JSON.stringify(httpResponse)}`);
         const resStatus = httpResponse.statusCode;
         if (resStatus != 200) {
           logger.error(`Response code is ${resStatus}`);
           process.exit(1);
         }
-        logger.info(`Body ${JSON.stringify(body)}`);
+        logger.debug(`Body ${JSON.stringify(body)}`);
         resolve(body);
       }
     );
