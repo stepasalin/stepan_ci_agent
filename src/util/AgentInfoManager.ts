@@ -13,6 +13,7 @@ export class AgentInfoManager {
     logPath: '',
     id: '',
     logCharsSent: 0,
+    runId: '',
   });
 
   static AGENT_INFO_SCHEMA = {
@@ -98,4 +99,6 @@ export interface AgentInfo {
   id: string;
   /** How many log chars have been sent on current Run */
   logCharsSent: number;
+  /** current Run Id */
+  runId: string;
 }
