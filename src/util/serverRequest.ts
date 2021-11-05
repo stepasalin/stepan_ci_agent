@@ -89,3 +89,15 @@ export async function updateRunStatus(
     newExecutionStatus: newExecutionStatus,
   });
 }
+
+export async function appendRunLog(
+  agentId: string,
+  runId: string,
+  newLogChunk: string
+): Promise<void> {
+  await postToServer('append-log', {
+    agentId: agentId,
+    runId: runId,
+    newLogContent: newLogChunk,
+  });
+}
