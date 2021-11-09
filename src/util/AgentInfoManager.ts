@@ -7,6 +7,7 @@ import { generateString } from './random';
 import { validate } from 'jsonschema';
 
 export class AgentInfoManager {
+  public latestInfo: any;
   static DEFAULT_INFO: AgentInfo = Object.freeze({
     busy: false,
     currentCommand: '',
@@ -30,7 +31,9 @@ export class AgentInfoManager {
 
   private redisClient: redis.RedisClient = redis.createClient();
 
-  private constructor() {}
+  private constructor() {
+    this.latestInfo = undefined;
+  }
 
   static async create() {
     return new AgentInfoManager();
@@ -61,7 +64,7 @@ export class AgentInfoManager {
           );
           return reject(validationErrors);
         }
-
+        this.latestInfo = parsedResult;
         return resolve(parsedResult);
       })
     );
