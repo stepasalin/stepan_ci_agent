@@ -80,6 +80,7 @@ export class AgentInfoManager {
     return new Promise((resolve, reject) =>
       redisClient.set(AGENT_NAME, JSON.stringify(agentInfo), (error) => {
         if (error) return reject(error);
+        this.latestInfo = agentInfo;
         resolve();
       })
     );
