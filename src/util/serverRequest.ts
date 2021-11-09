@@ -12,12 +12,12 @@ export function postToServer(endpoint: String, json: Object) {
       },
       function (err: any, httpResponse: any, body: any) {
         logger.debug(`Sending POST request to ${endpoint}`);
-        logger.debug(`Err ${err}`);
+        // logger.debug(`Err ${err}`);
         if (err) {
           logger.error(`Post request finished with ${err}`);
           process.exit(1);
         }
-        logger.debug(`Http Response ${JSON.stringify(httpResponse)}`);
+        // logger.debug(`Http Response ${JSON.stringify(httpResponse)}`);
         const resStatus = httpResponse.statusCode;
         if (resStatus != 200 && resStatus != 201) {
           logger.error(`Response code is ${resStatus}`);
@@ -39,12 +39,12 @@ export function getFromServer(endpoint: String, params: Object) {
       { url: url },
       function (err: any, httpResponse: any, body: any) {
         logger.debug(`Sending GET request to ${url}`);
-        logger.debug(`Err ${err}`);
+        // logger.debug(`Err ${err}`);
         if (err) {
           logger.error(`Get request finished with ${err}`);
           process.exit(1);
         }
-        logger.debug(`Http Response ${JSON.stringify(httpResponse)}`);
+        // logger.debug(`Http Response ${JSON.stringify(httpResponse)}`);
         const resStatus = httpResponse.statusCode;
         if (resStatus != 200) {
           logger.error(`Response code is ${resStatus}`);
