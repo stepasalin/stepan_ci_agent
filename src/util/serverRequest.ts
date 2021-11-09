@@ -23,7 +23,7 @@ export function postToServer(endpoint: String, json: Object) {
           logger.error(`Response code is ${resStatus}`);
           process.exit(1);
         }
-        logger.debug(`Body ${JSON.stringify(body)}`);
+        logger.debug(`Response body: ${JSON.stringify(body)}`);
         resolve(body);
       }
     );
@@ -50,7 +50,7 @@ export function getFromServer(endpoint: String, params: Object) {
           logger.error(`Response code is ${resStatus}`);
           process.exit(1);
         }
-        logger.debug(`Body ${JSON.stringify(body)}`);
+        logger.debug(`Response body: ${JSON.stringify(body)}`);
         resolve(body);
       }
     );
