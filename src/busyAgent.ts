@@ -6,9 +6,9 @@ import { newLog } from './util/NewLog';
 import { appendRunLog } from './util/serverRequest';
 
 export async function sendLatestLogToServer(
-  infoManager: AgentInfoManager,
-  agentInfo: AgentInfo
+  infoManager: AgentInfoManager
 ): Promise<void> {
+  const agentInfo: AgentInfo = infoManager.latestInfo;
   const newLogChunk = await newLog(infoManager);
   if (isEmpty(newLogChunk)) {
     logger.info(
@@ -20,10 +20,7 @@ export async function sendLatestLogToServer(
   }
 }
 
-export async function busyAgent(
-  infoManager: AgentInfoManager,
-  agentInfo: AgentInfo
-): Promise<void> {
-  await sendLatestLogToServer(infoManager, agentInfo);
+export async function busyAgent(infoManager: AgentInfoManager): Promise<void> {
+  await sendLatestLogToServer(infoManager);
   exit(0);
 }

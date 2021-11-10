@@ -16,11 +16,11 @@ async function agent(): Promise<void> {
   }
 
   if (agentInfo.busy) {
-    await busyAgent(infoManager, agentInfo);
+    await busyAgent(infoManager);
   }
 
   if (!agentInfo.busy) {
-    await freeAgent(infoManager, agentInfo);
+    await freeAgent(infoManager);
   }
   process.exit();
 }

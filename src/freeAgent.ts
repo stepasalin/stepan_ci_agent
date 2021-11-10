@@ -5,20 +5,14 @@ import { getRun, getRunCmd, updateRunStatus } from './util/serverRequest';
 import { isEmpty } from './util/isEmpty';
 import { executeShellCommand } from './util/exec';
 import { sendLatestLogToServer } from './busyAgent';
+import { reinitAgentInfo } from './reinitAgent';
 
-export async function freeAgent(
-  infoManager: AgentInfoManager,
-  agentInfo: AgentInfo
-): Promise<void> {
+export async function freeAgent(infoManager: AgentInfoManager): Promise<void> {
   logger.info(
     `Agent ${AGENT_NAME} awakened as free, therefore should request a Run`
   );
 
-  logger.info(
-    `But first will send logs of latest Run just to make sure everything is up-to-date on server`
-  );
-  await sendLatestLogToServer(infoManager, agentInfo);
-
+  const agentInfo: AgentInfo = infoManager.latestInfo;
   const thisAgentId = agentInfo.id;
   const availableRunParams = await getRun(thisAgentId);
   logger.info(`Got Run Params: ${JSON.stringify(availableRunParams)}`);
@@ -35,20 +29,22 @@ export async function freeAgent(
   agentInfo.currentCommand = runCmd;
   agentInfo.logPath = logPath;
   agentInfo.runId = runId;
-  agentInfo.logCharsSent = 0;
   await infoManager.updateInfo(agentInfo);
   await updateRunStatus(thisAgentId, runId, 'inProgress');
 
   const execResult = await executeShellCommand(runCmd, logPath);
-  agentInfo.busy = false;
-  await infoManager.updateInfo(agentInfo);
   let finalStatus;
   if (execResult == 0) {
     finalStatus = 'success';
   } else {
     finalStatus = 'fail';
   }
+  await sendLatestLogToServer(infoManager);
   await updateRunStatus(thisAgentId, runId, finalStatus);
+  agentInfo.logPath = '';
+  agentInfo.busy = false;
+  agentInfo.logCharsSent = 0;
+  // await reinitAgentInfo(infoManager);
 
   process.exit(execResult);
 }
