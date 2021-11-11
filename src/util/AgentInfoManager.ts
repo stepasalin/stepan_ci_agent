@@ -7,10 +7,14 @@ import { generateString } from './random';
 import { validate } from 'jsonschema';
 
 export class AgentInfoManager {
+  public latestInfo: any;
   static DEFAULT_INFO: AgentInfo = Object.freeze({
     busy: false,
     currentCommand: '',
     logPath: '',
+    id: '',
+    logCharsSent: 0,
+    runId: '',
   });
 
   static AGENT_INFO_SCHEMA = {
@@ -27,7 +31,9 @@ export class AgentInfoManager {
 
   private redisClient: redis.RedisClient = redis.createClient();
 
-  private constructor() {}
+  private constructor() {
+    this.latestInfo = undefined;
+  }
 
   static async create() {
     return new AgentInfoManager();
@@ -58,7 +64,7 @@ export class AgentInfoManager {
           );
           return reject(validationErrors);
         }
-
+        this.latestInfo = parsedResult;
         return resolve(parsedResult);
       })
     );
@@ -74,6 +80,7 @@ export class AgentInfoManager {
     return new Promise((resolve, reject) =>
       redisClient.set(AGENT_NAME, JSON.stringify(agentInfo), (error) => {
         if (error) return reject(error);
+        this.latestInfo = agentInfo;
         resolve();
       })
     );
@@ -85,11 +92,17 @@ export class AgentInfoManager {
   }
 }
 
-interface AgentInfo {
+export interface AgentInfo {
   /** If true, agent is currently executing a currentCommand. */
   busy: boolean;
   /** Current command being executed. */
   currentCommand: string;
   /** Absolute path to logs, local to agent machine. */
   logPath: string;
+  /** Agent id obtained from server. */
+  id: string;
+  /** How many log chars have been sent on current Run */
+  logCharsSent: number;
+  /** current Run Id */
+  runId: string;
 }
