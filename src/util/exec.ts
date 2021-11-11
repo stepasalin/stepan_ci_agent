@@ -17,17 +17,3 @@ export function executeShellCommand(cmd: String, logPath: String) {
     });
   });
 }
-
-// export async function newLog(logPath: string): Promise<string> {
-//   const currentLog = await readFile(logPath);
-//   const previousLogPath = `${logPath}.previous`;
-
-//   if (!(await fileExists(previousLogPath))) {
-//     await fs.writeFile(previousLogPath, currentLog);
-//     return currentLog;
-//   }
-
-//   const previousLog = await readFile(previousLogPath);
-//   await fs.writeFile(previousLogPath, currentLog);
-//   return currentLog.slice(previousLog.length);
-// }
