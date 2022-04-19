@@ -101,3 +101,13 @@ export async function appendRunLog(
     newLogContent: newLogChunk,
   });
 }
+
+export async function updateAgentStatus(
+  agentId: string,
+  newStatus: string
+): Promise<void> {
+  await postToServer('update-agent-status', {
+    agentId: agentId,
+    newStatus: newStatus,
+  });
+}
