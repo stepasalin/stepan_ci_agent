@@ -1,7 +1,12 @@
 import { AGENT_NAME } from './config';
 import { logger } from './util/logger';
 import { AgentInfoManager, AgentInfo } from './util/AgentInfoManager';
-import { getRun, getRunCmd, updateRunStatus } from './util/serverRequest';
+import {
+  getRun,
+  getRunCmd,
+  updateAgentStatus,
+  updateRunStatus,
+} from './util/serverRequest';
 import { isEmpty } from './util/isEmpty';
 import { executeShellCommand } from './util/exec';
 import { sendLatestLogToServer } from './busyAgent';
@@ -31,6 +36,7 @@ export async function freeAgent(infoManager: AgentInfoManager): Promise<void> {
   agentInfo.runId = runId;
   await infoManager.updateInfo(agentInfo);
   await updateRunStatus(thisAgentId, runId, 'inProgress');
+  await updateAgentStatus(thisAgentId, 'busy');
 
   const execResult = await executeShellCommand(runCmd, logPath);
   let finalStatus;
@@ -42,6 +48,7 @@ export async function freeAgent(infoManager: AgentInfoManager): Promise<void> {
   await sendLatestLogToServer(infoManager);
   await updateRunStatus(thisAgentId, runId, finalStatus);
   await reinitAgentInfo(infoManager);
+  await updateAgentStatus(thisAgentId, 'free');
 
   process.exit(execResult);
 }
