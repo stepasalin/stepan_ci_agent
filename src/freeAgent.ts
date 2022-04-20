@@ -47,8 +47,8 @@ export async function freeAgent(infoManager: AgentInfoManager): Promise<void> {
   }
   await sendLatestLogToServer(infoManager);
   await updateRunStatus(thisAgentId, runId, finalStatus);
-  await reinitAgentInfo(infoManager);
   await updateAgentStatus(thisAgentId, 'free');
+  await reinitAgentInfo(infoManager);
 
   process.exit(execResult);
 }
