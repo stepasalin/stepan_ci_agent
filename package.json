@@ -9,6 +9,7 @@
     "lint": "eslint --fix",
     "build": "rm -rf ./build && tsc",
     "agent": "NODE_ENV=development ts-node-dev src/agent.ts;",
+    "compiled-agent": "NODE_ENV=development node build/agent.js",
     "redis-flush": "echo 'FLUSHALL' | redis-cli",
     "reinit-agent": "NODE_ENV=development ts-node-dev src/reinitAgent.ts"
   },
