@@ -1,6 +1,6 @@
 import { logger } from './logger';
 import { urlEncode } from './urlencodeObj';
-import { SERVER_HOST, SERVER_PORT, AGENT_NAME } from '../config';
+import { SERVER_HOST, SERVER_PORT, AGENT_NAME, AGENT_GROUP } from '../config';
 const request = require('request');
 
 export function postToServer(endpoint: String, json: Object) {
@@ -60,6 +60,7 @@ export function getFromServer(endpoint: String, params: Object) {
 export async function getNewAgentId(): Promise<string> {
   const responseBody: any = await postToServer('add-agent', {
     name: AGENT_NAME,
+    agentGroup: AGENT_GROUP,
   });
   return responseBody.agent._id;
 }
